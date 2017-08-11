@@ -1,0 +1,27 @@
+{
+  "name": "yamcs-openmct-plugin",
+  "version": "0.0.1",
+  "description": "Yamcs Plugin for openmct",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ev1stensberg/yamcs-openmct-plugin.git"
+  },
+  "keywords": [
+    "openmct",
+    "nasa",
+    "yamcs",
+    "telemetry",
+    "MDB",
+    "MCT"
+  ],
+  "author": "Even Stensberg<evenstensberg@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ev1stensberg/yamcs-openmct-plugin/issues"
+  },
+  "homepage": "https://github.com/ev1stensberg/yamcs-openmct-plugin#readme"
+}
