@@ -14,7 +14,7 @@ const DATUM_TYPES = {
   'boolean': 'boolean'
 };
 
-module.exports = define(['axios'], function (axios) {function YamcsPlugin() {
+module.exports = define(['axios'], function YamcsPlugin(axios) {
     const names = getDictionary()
       .then(function (dictionary) {
         return dictionary.map(function (param) {
@@ -226,4 +226,4 @@ module.exports = define(['axios'], function (axios) {function YamcsPlugin() {
         }
       });
     };
-  }});
+  });
