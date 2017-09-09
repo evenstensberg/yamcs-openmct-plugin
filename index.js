@@ -1,5 +1,3 @@
-const axios = require('axios');
-
 const ENG_TYPES = {
   'UINT32': 'uint32Value',
   'FLOAT': 'floatValue',
@@ -14,7 +12,7 @@ const DATUM_TYPES = {
   'boolean': 'boolean'
 };
 
-module.exports = define(['axios'], function YamcsPlugin(axios) {
+function YamcsPlugin(options, axios) {
     const names = getDictionary()
       .then(function (dictionary) {
         return dictionary.map(function (param) {
@@ -226,4 +224,4 @@ module.exports = define(['axios'], function YamcsPlugin(axios) {
         }
       });
     };
-  });
+  };
