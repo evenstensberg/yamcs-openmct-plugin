@@ -1,12 +1,25 @@
-define(
-  ['axios'],
-  function YamcsPlugin(axios) {
+const axios = require('axios');
 
+const ENG_TYPES = {
+  'UINT32': 'uint32Value',
+  'FLOAT': 'floatValue',
+  'STRING': 'stringValue',
+  'SINT64': 'sint64Value'
+};
+const DATUM_TYPES = {
+  'enumeration': 'enum',
+  'string': 'enum',
+  'float': 'float',
+  'integer': 'integer',
+  'boolean': 'boolean'
+};
+
+module.exports = define(['axios'], function (axios) {function YamcsPlugin() {
     const names = getDictionary()
       .then(function (dictionary) {
         return dictionary.map(function (param) {
           return param
-        });
+        })
       });
     function getDictionary() {
       return axios.get('http://localhost:8090/api/mdb/simulator/parameters')
@@ -18,17 +31,16 @@ define(
       const YamcsObject = names.then(param => {
         return param.filter(p => p.name === identifier.key).pop()
       }).then(res => {
-        let resType = res.type ? res.type.engType : "string";
-        let returnObj = {
+        let datumObject = {
           key: "value",
           name: "Value",
           hints: {
             range: 1
-          }
+          },
+          format: res.type ? DATUM_TYPES[res.type.engType] : 'enum'
         }
-        if (resType === "enumeration" || resType === "string") {
-          returnObj.format = "enum";
-          returnObj.enumerations = [
+        if (datumObject.format === "enum") {
+          datumObject.enumerations = [
             {
               string: "ENABLED",
               value: 1
@@ -38,10 +50,8 @@ define(
               value: 0
             }
           ]
-        } else {
-          returnObj.format = resType;
         }
-        return Promise.resolve(returnObj)
+        return Promise.resolve(datumObject)
       })
       return YamcsObject
     }
@@ -134,23 +144,19 @@ define(
         request: function (domainObject, options) {
           return getParamForHistorical(domainObject).then((url) => {
             return axios.get(url.replace('mdb', 'archive')).then((resp) => {
-              return resp.data.parameter.map((param) => {
-                let val;
-                if (param.engValue.floatValue) {
-                  val = param.engValue.floatValue
-                }
-                else if (param.engValue.stringValue) {
-                  val = (param.engValue.stringValue === 'ENABLED') ? 1 : 0
-                }
-                else if (param.engType.uint32Value) {
-                  val = param.engType.uint32Value
-                }
-                return {
-                  id: param.id.name,
-                  timestamp: param.generationTime,
-                  value: val
-                }
-              })
+              if(Object.getOwnPropertyNames(resp.data).length == 0) {
+                return [{ timestamp: Date.now(), id: domainObject.name}];
+              } else {
+                return resp.data.parameter.map((param) => {
+                  let key = ENG_TYPES[param.engValue.type];
+                  let val = param.engValue[key];
+                  return {
+                    id: param.id.name,
+                    timestamp: param.generationTime,
+                    value: val
+                  }
+                })
+              }
             })
           })
         }
@@ -159,23 +165,25 @@ define(
       var socket = new WebSocket('ws://localhost:8090/simulator/_websocket');
       var listeners = {};
       socket.onmessage = function (event) {
-        point = JSON.parse(event.data);
+        let point = JSON.parse(event.data);
         names.then( param => param.filter( p => !!listeners[p.name]).pop())
         .then( (res) => {
             listeners[res.name].forEach(function (l) {
-              let incomingArr = point.pop()
-              console.log(incomingArr)
+              let incomingArr = point.pop();
               if(typeof incomingArr !== 'object') {
                 l({
                   id: res.name
                 })
               } else {
-                let datum = incomingArr.data.parameter.pop()
-              let datumObj = {
-                  id: res.name,
-                  value: datum.engValue.floatValue
+              let datum = (incomingArr.data && incomingArr.data.parameter.length !== 0) ? incomingArr.data.parameter.pop() : [];
+              let val = null;
+              if(datum.length !== 0) {
+                 val = datum.engValue[ENG_TYPES[datum.engValue.type]];
               }
-            l(datumObj);
+              l({
+                  id: res.name,
+                  value: val
+                });
               }
           });
         })
@@ -211,12 +219,11 @@ define(
               listeners[domainObject.identifier.key].filter(function (c) {
                 return c !== callback;
               });
-
-            if (!listeners[domainObject.identifier.key].length) {
-              socket.send(JSON.stringify([1, 1, 790, { "parameter": "unsubscribe" }]));
+            if (listeners[domainObject.identifier.key].length === 0) {
+              socket.send(JSON.stringify([1, 1, 790, { "parameters": "unsubscribe" }]));
             }
           };
         }
       });
     };
-  });
+  }});
