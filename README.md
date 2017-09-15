@@ -38,7 +38,9 @@ If you want to, you can configure the plugin as follows:
 ```js
 openmct.install(
   YamcsPlugin({
-    url: 'https://localhost:3000',
+    host: 'localhost', // defaults to localhost
+    port: '3000', // defaults to 8090
+    instance: 'simulator' // defaults to simulator
   })
 )
 ```
