@@ -1,6 +1,6 @@
 {
   "name": "yamcs-openmct-plugin",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "OpenMCT plugin for Yamcs telemetry",
   "main": "index.js",
   "scripts": {
@@ -25,9 +25,7 @@
     "url": "https://github.com/ev1stensberg/yamcs-openmct-plugin/issues"
   },
   "homepage": "https://github.com/ev1stensberg/yamcs-openmct-plugin#readme",
-  "dependencies": {
-    "axios": "^0.16.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "eslint-config-google": "^0.9.1",
     "prettier-eslint-cli": "^4.3.2"

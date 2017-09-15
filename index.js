@@ -1,5 +1,7 @@
 'use strict';
 
+const axios = require('./axios.min');
+
 const ENG_TYPES = {
   UINT32: 'uint32Value',
   FLOAT: 'floatValue',
@@ -14,7 +16,7 @@ const DATUM_TYPES = {
   boolean: 'boolean'
 };
 
-function YamcsPlugin(options, axios) { // eslint-disable-line
+function YamcsPlugin(options) { // eslint-disable-line
   const TELEMETRY = getDictionary().then(function(dictionary) {
     return dictionary.map(function(param) {
       return param;
