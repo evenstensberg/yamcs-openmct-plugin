@@ -36,8 +36,9 @@ After importing the plugin in your application, you will get a function named `Y
 If you want to, you can configure the plugin as follows:
 
 ```js
-openmct.install(YamcsPlugin({
-  url: 'https://localhost:3000',
+openmct.install(
+  YamcsPlugin({
+    url: 'https://localhost:3000',
   })
 )
 ```
