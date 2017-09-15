@@ -35,6 +35,7 @@ const DATUM_TYPES = {
 };
 
 export default function YamcsPlugin(options) {
+  
   const host = options.host || 'localhost';
   const port = options.port || '8090';
   const instance = options.instance || 'simulator';
@@ -46,7 +47,7 @@ export default function YamcsPlugin(options) {
   });
   function getDictionary() {
     return axios
-      .get(`http://${optionsURL}:${port}/api/mdb/${instance}/parameters`)
+      .get(`http://${host}:${port}/api/mdb/${instance}/parameters`)
       .then(response => response.data.parameter);
   }
   function transformYamcsToMCT(identifier) {
