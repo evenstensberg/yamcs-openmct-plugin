@@ -15,21 +15,19 @@ const DATUM_TYPES = {
 };
 
 function YamcsPlugin(options, axios) { // eslint-disable-line
-  const names = getDictionary().then(function(dictionary) {
+  const TELEMETRY = getDictionary().then(function(dictionary) {
     return dictionary.map(function(param) {
       return param;
     });
   });
   function getDictionary() {
-    return axios.get('http://localhost:8090/api/mdb/simulator/parameters').then(function(response) {
-      return response.data.parameter;
-    });
+    return axios
+            .get('http://localhost:8090/api/mdb/simulator/parameters')
+            .then(response => response.data.parameter);
   }
   function transformYamcsToMCT(identifier) {
-    const YamcsObject = names
-      .then(param => {
-        return param.filter(p => p.name === identifier.key).pop();
-      })
+    const YamcsObject = TELEMETRY
+      .then(param => param.filter(p => p.name === identifier.key).pop())
       .then(res => {
         const datumObject = {
           key: 'value',
@@ -56,28 +54,21 @@ function YamcsPlugin(options, axios) { // eslint-disable-line
     return YamcsObject;
   }
   function getParamForHistorical(identifier) {
-    const YamcsObject = names
-      .then(param => {
-        return param.filter(p => p.name === identifier.name).pop();
-      })
-      .then(res => {
-        return Promise.resolve(res.url);
-      });
-    return YamcsObject;
+    return TELEMETRY
+            .then(param => param.filter(p => p.name === identifier.name).pop())
+            .then(res => Promise.resolve(res.url));;
   }
 
   function getParamInfo(identifier) {
     if (identifier.key === 'parameters') {
-      return new Promise(function(resolve, reject) {
+      return new Promise((resolve, reject) => {
         resolve({
           identifier: identifier,
           name: 'Yamcs',
           type: 'folder',
           location: 'ROOT'
         });
-      }).then(res => {
-        return res;
-      });
+      }).then(res => res);
     } else {
       return transformYamcsToMCT(identifier).then(telemetryDatum => {
         return {
@@ -112,9 +103,7 @@ function YamcsPlugin(options, axios) { // eslint-disable-line
 
     openmct.objects.addProvider('yamcs.instance', {
       get: function(identifier) {
-        return getParamInfo(identifier).then(function(dictionary) {
-          return dictionary;
-        });
+        return getParamInfo(identifier).then(dictionary => dictionary);
       }
     });
 
@@ -125,14 +114,12 @@ function YamcsPlugin(options, axios) { // eslint-disable-line
         );
       },
       load: function() {
-        return names.then(name => {
-          return name.map(param => {
+        return TELEMETRY.then(name => name.map(param => {
             return {
               namespace: 'yamcs.instance',
               key: param.name
             };
-          });
-        });
+          }));
       }
     });
 
@@ -149,7 +136,7 @@ function YamcsPlugin(options, axios) { // eslint-disable-line
       request: function(domainObject) {
         return getParamForHistorical(domainObject).then(url => {
           return axios.get(url.replace('mdb', 'archive')).then(resp => {
-            if (Object.getOwnPropertyNames(resp.data).length == 0) {
+            if (Object.getOwnPropertyNames(resp.data).length === 0) {
               return [{timestamp: Date.now(), id: domainObject.name}];
             } else {
               return resp.data.parameter.map(param => {
@@ -170,7 +157,7 @@ function YamcsPlugin(options, axios) { // eslint-disable-line
     const listeners = {};
     socket.onmessage = function(event) {
       const point = JSON.parse(event.data);
-      names.then(param => param.filter(p => !!listeners[p.name]).pop()).then(res => {
+      TELEMETRY.then(param => param.filter(p => !!listeners[p.name]).pop()).then(res => {
         listeners[res.name].forEach(function(l) {
           const incomingArr = point.pop();
           if (typeof incomingArr !== 'object') {
@@ -204,10 +191,8 @@ function YamcsPlugin(options, axios) { // eslint-disable-line
           listeners[domainObject.identifier.key] = [];
         }
         if (!listeners[domainObject.identifier.key].length) {
-          names
-            .then(param => {
-              return param.filter(p => p.name === domainObject.identifier.key).pop();
-            })
+          TELEMETRY
+            .then(param => param.filter(p => p.name === domainObject.identifier.key).pop())
             .then(res => {
               socket.send(
                 JSON.stringify([
@@ -228,9 +213,7 @@ function YamcsPlugin(options, axios) { // eslint-disable-line
         return function() {
           listeners[domainObject.identifier.key] = listeners[
             domainObject.identifier.key
-          ].filter(function(c) {
-            return c !== callback;
-          });
+          ].filter(c => c !== callback);
           if (listeners[domainObject.identifier.key].length === 0) {
             socket.send(JSON.stringify([1, 1, 790, {parameters: 'unsubscribe'}]));
           }
